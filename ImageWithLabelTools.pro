@@ -27,16 +27,22 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     imgprocthread.cpp \
-    musicplayer.cpp
+    musicplayer.cpp \
+    selectlabelmodelmainwindow.cpp \
+    objectdetectionlabelmainwindow.cpp
 
 HEADERS += \
         mainwindow.h \
     imgprocthread.h \
-    musicplayer.h
+    musicplayer.h \
+    selectlabelmodelmainwindow.h \
+    objectdetectionlabelmainwindow.h
 
 FORMS += \
         mainwindow.ui \
-    musicplayer.ui
+    musicplayer.ui \
+    selectlabelmodelmainwindow.ui \
+    objectdetectionlabelmainwindow.ui
 
 INCLUDEPATH += F:/opencvmingw/include
 INCLUDEPATH += F:/opencvmingw/include/opencv

@@ -85,6 +85,7 @@ signals:
     void send_LeftAndRightImageInfo(QPoint,QPoint,QString);
     void shortkey_nextImg();
     void shortkey_saveResult();
+    void send_returnInfo(int);
 private:
     Ui::MainWindow *ui;
 };

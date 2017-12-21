@@ -185,7 +185,8 @@ bool MainWindow::isDirexits(QString filedir)
 void MainWindow::on_ExitBtn_clicked()
 {
     m_makeimg->quit();
-    exit(EXIT_SUCCESS);
+   send_returnInfo(1);
+    // exit(EXIT_SUCCESS);
 }
 
 void MainWindow::on_InsertNewLabelBtn_clicked()
@@ -247,7 +248,6 @@ void MainWindow::on_SelectImgBtn_clicked()
             OriImage = imread(stdmatchfilename);
             DispImage =  convertMatToQImage(OriImage);
             ui->ImageDisp->setPixmap(QPixmap::fromImage(DispImage));
-
             neededLabelImgIndex++;
             ui->ImgNumCount->setNum(neededLabelImgIndex-1);
         }
@@ -262,7 +262,7 @@ void MainWindow::accept_QImage(QImage oriImage)
 void MainWindow::on_SaveResultBtn_clicked()
 {
     cv::Point stdleftPoint,stdrightPoint;
-    if(rightFnishPoint.x()==0)
+    if(rightFnishPoint.x()==0||rightFnishPoint.y()==0||leftFnishPoint.x()==0||leftFnishPoint.y()==0)
     {
         OriImage.copyTo(TempleteImage);
         isbinaryClassfiy = true;
@@ -281,7 +281,9 @@ void MainWindow::on_SaveResultBtn_clicked()
         QString tempfilePath = selectSaveImgDir.replace("/","\\")+QString("\\training");
         ui->FilePathEdit->setText(tempfilePath);
         QString secondfilepath = ui->LabelBox->currentText();
-        QString fullfilepath = tempfilePath+QString("\\")+secondfilepath;
+        QString imgfilepath = tempfilePath+QString("\\")+secondfilepath;
+        QString fullfilepath = tempfilePath;
+        isDirexits(imgfilepath);
         isDirexits(fullfilepath);
         QString saveimageListFilename = fullfilepath+QString("\\trainImageList.txt");
         if(trainingFileList.fileName()!=saveimageListFilename)
@@ -305,17 +307,17 @@ void MainWindow::on_SaveResultBtn_clicked()
             }
         }
         QString tempfileName = secondfilepath+QString("(%1).bmp").arg(traing_TempleteImageNum);
-        std::string savetempfile = (fullfilepath+QString("\\")+tempfileName).toStdString();
+        std::string savetempfile = (imgfilepath+QString("\\")+tempfileName).toStdString();
         Mat grayTempleteImage;
         cvtColor(TempleteImage,grayTempleteImage,COLOR_BGR2GRAY);
         imwrite(savetempfile,grayTempleteImage);
      if(isbinaryClassfiy)
      {
-         trainingfileout<<tempfileName<<"  "<<ui->LabelBox->currentText()<<endl;
+         trainingfileout<<secondfilepath<<"/"<<tempfileName<<" "<<ui->LabelBox->currentText()<<endl;
      }
      else
      {
-        trainingfileout<<tempfileName<<"  "<<stdleftPoint.x<<","<<stdleftPoint.y<<"  "<<stdrightPoint.x<<","<<stdrightPoint.y<<"  "<<ui->LabelBox->currentText()<<endl;
+        trainingfileout<<secondfilepath<<"/"<<tempfileName<<" "<<stdleftPoint.x<<","<<stdleftPoint.y<<" "<<stdrightPoint.x<<","<<stdrightPoint.y<<" "<<ui->LabelBox->currentText()<<endl;
      }
         traing_TempleteImageNum++;
         for(size_t i=0;i<TrainingLabelIndex.size();i++)
@@ -334,14 +336,22 @@ void MainWindow::on_SaveResultBtn_clicked()
         QString tempfilePath = selectSaveImgDir.replace("/","\\")+QString("\\testing");
         ui->FilePathEdit->setText(tempfilePath);
         QString secondfilepath = ui->LabelBox->currentText();
-        QString fullfilepath = tempfilePath+QString("\\")+secondfilepath;
+         QString imgfilepath = tempfilePath+QString("\\")+secondfilepath;
+        QString fullfilepath = tempfilePath;
+        isDirexits(imgfilepath);
         isDirexits(fullfilepath);
         QString saveimageListFilename = fullfilepath+QString("\\testImageList.txt");
-        testingFileList.setFileName(saveimageListFilename);
-        if(!testingFileList.open(QFile::WriteOnly|QFile::Append))
+        if(testingFileList.fileName()!=saveimageListFilename)
+        {
+
+         testingFileList.close();
+         testingFileList.setFileName(saveimageListFilename);
+        if(!testingFileList.open(QFile::WriteOnly|QFile::Append|QIODevice::Text))
         {
 
         }
+        }
+
         QTextStream testingfileout(&testingFileList);
         for(size_t i=0;i<TestingLabelIndex.size();i++)
         {
@@ -351,23 +361,31 @@ void MainWindow::on_SaveResultBtn_clicked()
                 break;
             }
         }
+
         QString tempfileName = secondfilepath+QString("(%1).bmp").arg(testing_TempleteImageNum);
-        std::string savetempfile = (fullfilepath+QString("\\")+tempfileName).toStdString();
+        std::string savetempfile = (imgfilepath+QString("\\")+tempfileName).toStdString();
         Mat grayTempleteImage;
         cvtColor(TempleteImage,grayTempleteImage,COLOR_BGR2GRAY);
         imwrite(savetempfile,grayTempleteImage);
-        testingfileout<<tempfileName<<"  "<<stdleftPoint.x<<","<<stdleftPoint.y<<"  "<<stdrightPoint.x<<","<<stdrightPoint.y<<"  "<<ui->LabelBox->currentText()<<endl;
-        testing_TempleteImageNum++;
-        for(size_t i=0;i<TestingLabelIndex.size();i++)
-        {
-            if(TestingLabelIndex.at(i)==ui->LabelBox->currentText())
-            {
-                TestingLabelIndexLastnum.replace(i,testing_TempleteImageNum);
-                break;
-            }
-        }
-        TestingLabelIndex.append(ui->LabelBox->currentText());
-        TestingLabelIndexLastnum.append(testing_TempleteImageNum);
+     if(isbinaryClassfiy)
+     {
+         testingfileout<<secondfilepath<<"/"<<tempfileName<<" "<<ui->LabelBox->currentText()<<endl;
+     }
+     else
+     {
+        testingfileout<<secondfilepath<<"/"<<tempfileName<<" "<<stdleftPoint.x<<","<<stdleftPoint.y<<" "<<stdrightPoint.x<<","<<stdrightPoint.y<<" "<<ui->LabelBox->currentText()<<endl;
+     }
+     testing_TempleteImageNum++;
+     for(size_t i=0;i<TestingLabelIndex.size();i++)
+     {
+         if(TestingLabelIndex.at(i)==ui->LabelBox->currentText())
+         {
+             TestingLabelIndexLastnum.replace(i,testing_TempleteImageNum);
+             break;
+         }
+     }
+     TestingLabelIndex.append(ui->LabelBox->currentText());
+     TestingLabelIndexLastnum.append(testing_TempleteImageNum);
     }
 }
 
